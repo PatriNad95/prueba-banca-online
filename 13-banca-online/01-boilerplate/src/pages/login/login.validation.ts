@@ -1,33 +1,24 @@
+import { FormValidationResult } from "@/common/validations";
+import { Credentials, CredentialsformErrors } from "./login.vm";
 import {
-  CredentialsformErrors,
-  createEmptyCredentialsformErrors,
-} from "./login.vm";
-
-interface ValidationResult {
-  succeeded: boolean;
-  errors: CredentialsformErrors;
-}
+  validatePasswordField,
+  validateUserField,
+} from "./login-field.validation";
 
 export const validateForm = (
-  credentials: CredentialsformErrors
-): ValidationResult => {
-  let validationResult = {
-    succeeded: true,
-    errors: createEmptyCredentialsformErrors(),
+  credentials: Credentials
+): FormValidationResult<CredentialsformErrors> => {
+  const fieldValidationResults = [
+    validateUserField(credentials.user),
+    validatePasswordField(credentials.password),
+  ];
+
+  const formValidationResult: FormValidationResult<CredentialsformErrors> = {
+    succeeded: fieldValidationResults.every((f) => f.succeeded),
+    errors: {
+      user: fieldValidationResults[0].errorMessage ?? "",
+      password: fieldValidationResults[1].errorMessage ?? "",
+    },
   };
-  if (!credentials.user.trim()) {
-    validationResult.errors = {
-      ...validationResult.errors,
-      user: "Debe informar el campo usuario",
-    };
-    validationResult.succeeded = false;
-  }
-  if (!credentials.password.trim()) {
-    validationResult.errors = {
-      ...validationResult.errors,
-      password: "Debe informar el campo contraseña",
-    };
-    validationResult.succeeded = false;
-  }
-  return validationResult;
+  return formValidationResult;
 };
